@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= link.name %> - Calendly Clone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f6f8fd 0%, #f1f4f9 100%);
+            min-height: 100vh;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        }
+        .time-slot {
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .time-slot:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+        }
+        .time-slot::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(79, 70, 229, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .time-slot:hover::after {
+            opacity: 1;
+        }
+        .calendar-day {
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .calendar-day:hover:not(:disabled) {
+            background-color: rgba(79, 70, 229, 0.1);
+            transform: translateY(-1px);
+        }
+        .calendar-day.selected {
+            background-color: #4f46e5;
+            color: white;
+            transform: scale(1.05);
+        }
+        .calendar-day.selected::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background-color: white;
+            border-radius: 50%;
+        }
+        .time-slot.selected {
+            background-color: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+            transform: scale(1.05);
+        }
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+            position: relative;
+        }
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .form-input {
+            transition: all 0.2s ease;
+        }
+        .form-input:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+        }
+        .submit-button {
+            transition: all 0.3s ease;
+        }
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+        .submit-button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="py-12">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="glass-effect rounded-2xl p-8 shadow-xl mb-8 transform hover:scale-[1.01] transition-transform duration-300">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2"><%= link.name %></h1>
+            <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                <div class="flex items-center bg-indigo-50 px-3 py-1.5 rounded-full">
+                    <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <%= link.meetingDuration %> minutes
+                </div>
+                <div class="flex items-center bg-indigo-50 px-3 py-1.5 rounded-full">
+                    <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Up to <%= link.maxDaysInAdvance %> days in advance
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="glass-effect rounded-2xl p-8 shadow-xl mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                Select a Date & Time
+            </h2>
+            <% if (!link.schedulingWindow.calendarId) { %>
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 transform hover:scale-[1.01] transition-transform duration-300">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">No Google Calendar Connected</h3>
+                            <div class="mt-2 text-sm text-red-700">
+                                <p>The calendar owner needs to connect their Google Calendar account to enable scheduling.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% } else { %>
+                <div class="grid grid-cols-7 gap-2" id="calendar">
+                    <!-- Calendar will be populated by JavaScript -->
+                </div>
+            <% } %>
+        </div>
+
+        <!-- Time Slots -->
+        <div id="timeSlots" class="glass-effect rounded-2xl p-8 shadow-xl mb-8 hidden">
+            <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Available Times
+            </h2>
+            <div id="timeSlotsContainer" class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                <!-- Time slots will be populated by JavaScript -->
+            </div>
+            <div id="timeSlotsError" class="error-message hidden"></div>
+        </div>
+
+        <!-- Booking Form -->
+        <div id="bookingForm" class="glass-effect rounded-2xl p-8 shadow-xl hidden">
+            <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                Book Your Meeting
+            </h2>
+            <form id="scheduleForm" class="space-y-6">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" name="email" id="email" required 
+                           class="form-input mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-lg">
+                </div>
+                <div>
+                    <label for="linkedin" class="block text-sm font-medium text-gray-700 mb-1">LinkedIn Profile URL</label>
+                    <input type="url" name="linkedin" id="linkedin" required 
+                           class="form-input mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-lg">
+                </div>
+                <% link.customQuestions.forEach(function(question) { %>
+                    <div>
+                        <label for="question-<%= question._id %>" class="block text-sm font-medium text-gray-700 mb-1">
+                            <%= question.question %>
+                            <% if (question.required) { %>
+                                <span class="text-red-500">*</span>
+                            <% } %>
+                        </label>
+                        <textarea
+                            name="question-<%= question._id %>"
+                            id="question-<%= question._id %>"
+                            rows="3"
+                            <%= question.required ? 'required' : '' %>
+                            class="form-input mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-lg"
+                        ></textarea>
+                    </div>
+                <% }); %>
+                <div>
+                    <button type="submit" id="submitButton"
+                            class="submit-button w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <span id="submitButtonText">Schedule Meeting</span>
+                        <svg id="submitButtonSpinner" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="formError" class="error-message hidden"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let selectedDate = null;
+        let selectedTime = null;
+        let isSubmitting = false;
+
+        // Initialize calendar
+        function initCalendar() {
+            const calendar = document.getElementById('calendar');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Set to start of day
+            
+            // Calculate max date based on maxDaysInAdvance
+            const maxDate = new Date(today);
+            maxDate.setDate(today.getDate() + Number('<%= link.maxDaysInAdvance %>'));
+            maxDate.setHours(23, 59, 59, 999); // Set to end of day
+
+            // Clear existing calendar
+            calendar.innerHTML = '';
+
+            // Add weekday headers
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            weekdays.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'text-center text-sm font-medium text-gray-500 py-2';
+                dayHeader.textContent = day;
+                calendar.appendChild(dayHeader);
+            });
+
+            // Get scheduling window time slots
+            const schedulingWindow = JSON.parse('<%- JSON.stringify(link.schedulingWindow) %>');
+            const availableWeekdays = schedulingWindow.timeSlots.map(slot => slot.weekday);
+
+            // Add days
+            let currentDate = new Date(today);
+            while (currentDate <= maxDate) {
+                const dayElement = document.createElement('button');
+                dayElement.className = 'calendar-day p-2 text-center text-sm rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500';
+                dayElement.textContent = currentDate.getDate();
+                
+                // Check if the day is available (not in the past, within max days, and has time slots)
+                const isAvailable = currentDate >= today && 
+                                  currentDate <= maxDate && 
+                                  availableWeekdays.includes(currentDate.getDay());
+                
+                if (!isAvailable) {
+                    dayElement.disabled = true;
+                    dayElement.className += ' text-gray-400 cursor-not-allowed';
+                } else {
+                    dayElement.addEventListener('click', () => selectDate(currentDate, dayElement));
+                }
+
+                calendar.appendChild(dayElement);
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+        }
+
+        // Select date and fetch available time slots
+        async function selectDate(date, element) {
+            if (isSubmitting) return;
+            
+            selectedDate = date;
+            selectedTime = null;
+            
+            // Get the exact weekday that was clicked
+            const clickedWeekday = date.getDay();
+            
+            console.log('Selected date details:', {
+                originalDate: date.toISOString(),
+                clickedWeekday,
+                weekdayName: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][clickedWeekday],
+                date: date.getDate(),
+                month: date.getMonth(),
+                year: date.getFullYear()
+            });
+            
+            // Update calendar UI
+            document.querySelectorAll('.calendar-day').forEach(day => {
+                day.classList.remove('selected');
+            });
+            element.classList.add('selected');
+
+            const timeSlots = document.getElementById('timeSlots');
+            const timeSlotsContainer = document.getElementById('timeSlotsContainer');
+            const timeSlotsError = document.getElementById('timeSlotsError');
+            const bookingForm = document.getElementById('bookingForm');
+            
+            timeSlots.classList.remove('hidden');
+            timeSlotsContainer.classList.add('loading');
+            timeSlotsError.classList.add('hidden');
+            bookingForm.classList.add('hidden');
+            
+            try {
+                // Get the scheduling window's time slots
+                const windowResponse = await fetch(`/scheduling/windows/<%= link.schedulingWindow._id %>`);
+                if (!windowResponse.ok) {
+                    const error = await windowResponse.json();
+                    throw new Error(error.error || 'Failed to fetch scheduling window');
+                }
+                const schedulingWindow = await windowResponse.json();
+
+                // Check if there are time slots defined for this weekday
+                const windowTimeSlots = schedulingWindow.timeSlots.filter(slot => {
+                    const slotWeekday = Number(slot.weekday);
+                    const match = slotWeekday === clickedWeekday;
+                    console.log('Weekday check:', {
+                        slotWeekday,
+                        clickedWeekday,
+                        match,
+                        slotStartHour: slot.startHour,
+                        slotEndHour: slot.endHour
+                    });
+                    return match;
+                });
+                
+                console.log('Scheduling window details:', {
+                    clickedWeekday,
+                    weekdayName: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][clickedWeekday],
+                    windowTimeSlots,
+                    selectedDate: date.toISOString()
+                });
+                
+                if (windowTimeSlots.length === 0) {
+                    timeSlotsError.textContent = 'No available time slots for this day';
+                    timeSlotsError.classList.remove('hidden');
+                    timeSlotsContainer.classList.remove('loading');
+                    return;
+                }
+
+                // Create end date for the same day
+                const endDate = new Date(date);
+                endDate.setHours(23, 59, 59, 999);
+
+                console.log('Date details for API call:', {
+                    selectedDate: date.toISOString(),
+                    endDate: endDate.toISOString(),
+                    clickedWeekday,
+                    weekdayName: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][clickedWeekday]
+                });
+
+                // Get available time slots from Google Calendar
+                const response = await fetch(`/calendar/available-slots?calendarId=<%= link.schedulingWindow.calendarId %>&startDate=${date.toISOString()}&endDate=${endDate.toISOString()}&duration=<%= link.meetingDuration %>&schedulingWindowId=<%= link.schedulingWindow._id %>`);
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    if (error.requiresReconnect) {
+                        timeSlotsError.innerHTML = `
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h3 class="text-sm font-medium text-red-800">Google Calendar Access Required</h3>
+                                        <div class="mt-2 text-sm text-red-700">
+                                            <p>${error.error}</p>
+                                            <p class="mt-2">
+                                                <% if (user && user._id.toString() === link.user._id.toString()) { %>
+                                                    <a href="/auth/google/reconnect" class="text-indigo-600 hover:text-indigo-500 font-medium">
+                                                        Click here to reconnect your Google Calendar account
+                                                    </a>
+                                                <% } else { %>
+                                                    Please ask the calendar owner to reconnect their Google Calendar account.
+                                                <% } %>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        throw new Error(error.error || 'Failed to fetch time slots');
+                    }
+                    timeSlotsError.classList.remove('hidden');
+                    return;
+                }
+                
+                const slots = await response.json();
+                timeSlotsContainer.innerHTML = '';
+
+                if (slots.length === 0) {
+                    timeSlotsError.textContent = 'No available time slots for this date';
+                    timeSlotsError.classList.remove('hidden');
+                    return;
+                }
+
+                // Filter slots to only show those within the scheduling window hours
+                const availableSlots = slots.filter(slot => {
+                    const slotDate = new Date(slot.start);
+                    const localHour = slotDate.getHours();
+                    const slotWeekday = slotDate.getDay();
+                    
+                    // First check if the slot is on the correct weekday
+                    const isCorrectWeekday = windowTimeSlots.some(windowSlot => windowSlot.weekday === slotWeekday);
+                    if (!isCorrectWeekday) return false;
+                    
+                    // Then check if the hour is within the window's time range
+                    return windowTimeSlots.some(windowSlot => {
+                        const slotEndHour = new Date(slot.end).getHours();
+                        return localHour >= windowSlot.startHour && 
+                               slotEndHour <= windowSlot.endHour;
+                    });
+                });
+
+                if (availableSlots.length === 0) {
+                    timeSlotsError.textContent = 'No available time slots for this date';
+                    timeSlotsError.classList.remove('hidden');
+                    return;
+                }
+                
+                // Sort slots by start time
+                availableSlots.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+                
+                availableSlots.forEach(slot => {
+                    const slotDate = new Date(slot.start);
+                    const slotElement = document.createElement('button');
+                    slotElement.className = 'time-slot p-3 text-center text-sm rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500';
+                    slotElement.textContent = slotDate.toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        hour12: true 
+                    });
+                    slotElement.addEventListener('click', () => selectTime(slot, slotElement));
+                    timeSlotsContainer.appendChild(slotElement);
+                });
+            } catch (error) {
+                console.error('Error fetching time slots:', error);
+                timeSlotsError.textContent = error.message || 'Failed to load time slots. Please try again.';
+                timeSlotsError.classList.remove('hidden');
+            } finally {
+                timeSlotsContainer.classList.remove('loading');
+            }
+        }
+
+        // Select time and show booking form
+        function selectTime(slot, element) {
+            if (isSubmitting) return;
+            
+            selectedTime = slot;
+            
+            // Update time slots UI
+            document.querySelectorAll('.time-slot').forEach(timeSlot => {
+                timeSlot.classList.remove('selected');
+            });
+            element.classList.add('selected');
+
+            const bookingForm = document.getElementById('bookingForm');
+            bookingForm.classList.remove('hidden');
+            bookingForm.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Handle form submission
+        document.getElementById('scheduleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (isSubmitting) return;
+            
+            const submitButton = document.getElementById('submitButton');
+            const submitButtonText = document.getElementById('submitButtonText');
+            const submitButtonSpinner = document.getElementById('submitButtonSpinner');
+            const formError = document.getElementById('formError');
+            
+            isSubmitting = true;
+            submitButton.classList.add('opacity-75', 'cursor-not-allowed');
+            submitButtonText.textContent = 'Scheduling...';
+            submitButtonSpinner.classList.remove('hidden');
+            formError.classList.add('hidden');
+            
+            const formData = new FormData(e.target);
+            const customAnswers = [];
+            const questions = JSON.parse('<%- JSON.stringify(link.customQuestions) %>');
+            
+            questions.forEach(question => {
+                customAnswers.push({
+                    question: question.question,
+                    answer: formData.get(`question-${question._id}`)
+                });
+            });
+
+            try {
+                const response = await fetch('/scheduling/schedule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        linkSlug: '<%= link.slug %>',
+                        startTime: selectedTime.start,
+                        endTime: selectedTime.end,
+                        attendeeEmail: formData.get('email'),
+                        attendeeLinkedIn: formData.get('linkedin'),
+                        customAnswers
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to schedule meeting');
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    window.location.href = '/scheduling/success';
+                } else {
+                    throw new Error('Failed to schedule meeting');
+                }
+            } catch (error) {
+                console.error('Error scheduling meeting:', error);
+                formError.textContent = error.message || 'Failed to schedule meeting. Please try again.';
+                formError.classList.remove('hidden');
+            } finally {
+                isSubmitting = false;
+                submitButton.classList.remove('opacity-75', 'cursor-not-allowed');
+                submitButtonText.textContent = 'Schedule Meeting';
+                submitButtonSpinner.classList.add('hidden');
+            }
+        });
+
+        // Initialize calendar on page load
+        initCalendar();
+    </script>
+</body>
+</html> 

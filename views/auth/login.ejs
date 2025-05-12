@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Calendly Clone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f6f8fd 0%, #f1f4f9 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .google-btn {
+            transition: all 0.3s ease;
+        }
+        .google-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="text-center">
+            <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">
+                Welcome to
+                <span class="text-indigo-600">Calendly Clone</span>
+            </h1>
+            <p class="mt-3 text-lg text-gray-600">
+                Schedule meetings with ease and efficiency
+            </p>
+        </div>
+        
+        <div class="mt-8 glass-effect rounded-2xl p-8 shadow-xl">
+            <div class="space-y-6">
+                <div class="text-center">
+                    <h2 class="text-2xl font-semibold text-gray-900">
+                        Get Started
+                    </h2>
+                    <p class="mt-2 text-sm text-gray-600">
+                        Connect your Google account to begin
+                    </p>
+                </div>
+                
+                <a href="/auth/google"
+                   class="google-btn group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <svg class="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/>
+                        </svg>
+                    </span>
+                    Sign in with Google
+                </a>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <p class="text-sm text-gray-600">
+                By signing in, you agree to our 
+                <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Terms of Service</a>
+                and
+                <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Privacy Policy</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html> 

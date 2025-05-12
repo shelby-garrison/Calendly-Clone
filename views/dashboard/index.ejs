@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Calendly Clone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+        }
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-semibold text-gray-900">Calendly Clone</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-600">Welcome, <%= user.displayName %></span>
+                    <a href="/auth/logout" class="text-sm text-indigo-600 hover:text-indigo-500">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Scheduling Windows -->
+            <div class="mb-12">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Scheduling Windows</h2>
+                    <button onclick="showCreateWindowModal()" 
+                            class="btn-primary inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Create Window
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    <% windows.forEach(function(window) { %>
+                        <div class="card bg-white rounded-xl shadow-sm overflow-hidden">
+                            <div class="p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4"><%= window.name %></h3>
+                                <div class="space-y-3">
+                                    <% window.timeSlots.forEach(function(slot) { %>
+                                        <div class="flex items-center text-sm text-gray-600">
+                                            <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            <%= getWeekdayName(slot.weekday) %>: <%= slot.startHour %>:00 - <%= slot.endHour %>:00
+                                        </div>
+                                    <% }); %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+
+            <!-- Scheduling Links -->
+            <div>
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Scheduling Links</h2>
+                    <button onclick="showCreateLinkModal()" 
+                            class="btn-primary inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Create Link
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    <% links.forEach(function(link) { %>
+                        <div class="card bg-white rounded-xl shadow-sm overflow-hidden">
+                            <div class="p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4"><%= link.name %></h3>
+                                <div class="space-y-3 text-sm text-gray-600">
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Duration: <%= link.meetingDuration %> minutes
+                                    </div>
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        Max days in advance: <%= link.maxDaysInAdvance %>
+                                    </div>
+                                    <% if (link.maxUses) { %>
+                                        <div class="flex items-center">
+                                            <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                            </svg>
+                                            Max uses: <%= link.maxUses %>
+                                        </div>
+                                    <% } %>
+                                    <% if (link.expirationDate) { %>
+                                        <div class="flex items-center">
+                                            <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            Expires: <%= new Date(link.expirationDate).toLocaleDateString() %>
+                                        </div>
+                                    <% } %>
+                                </div>
+                                <div class="mt-6">
+                                    <a href="/scheduling/<%= link.slug %>" 
+                                       class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                                        View Link
+                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Window Modal -->
+    <div id="createWindowModal" class="hidden fixed z-10 inset-0 overflow-y-auto">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <form id="createWindowForm" class="p-6">
+                    <div>
+                        <label for="windowName" class="block text-sm font-medium text-gray-700">Window Name</label>
+                        <input type="text" name="name" id="windowName" required
+                               class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        <div id="windowNameError" class="hidden text-red-500 text-sm mt-1"></div>
+                    </div>
+                    <div id="timeSlots" class="mt-4">
+                        <!-- Time slots will be added here -->
+                    </div>
+                    <div id="timeSlotsError" class="hidden text-red-500 text-sm mt-1"></div>
+                    <div class="mt-4">
+                        <button type="button" onclick="addTimeSlot()" 
+                                class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Add Time Slot
+                        </button>
+                    </div>
+                    <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                        <button type="submit" id="submitWindowButton"
+                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm">
+                            <span id="submitWindowButtonText">Create</span>
+                            <svg id="submitWindowButtonSpinner" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
+                        <button type="button" onclick="hideCreateWindowModal()" 
+                                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Link Modal -->
+    <div id="createLinkModal" class="hidden fixed z-10 inset-0 overflow-y-auto">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <form id="createLinkForm" class="p-6">
+                    <div>
+                        <label for="linkName" class="block text-sm font-medium text-gray-700">Link Name</label>
+                        <input type="text" name="name" id="linkName" required
+                               class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        <div id="linkNameError" class="hidden text-red-500 text-sm mt-1"></div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="schedulingWindow" class="block text-sm font-medium text-gray-700">Scheduling Window</label>
+                        <select name="schedulingWindow" id="schedulingWindow" required
+                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            <option value="">Select a window</option>
+                            <% windows.forEach(function(window) { %>
+                                <option value="<%= window._id %>"><%= window.name %></option>
+                            <% }); %>
+                        </select>
+                        <div id="schedulingWindowError" class="hidden text-red-500 text-sm mt-1"></div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="meetingDuration" class="block text-sm font-medium text-gray-700">Meeting Duration (minutes)</label>
+                        <input type="number" name="meetingDuration" id="meetingDuration" required min="15" step="15"
+                               class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        <div id="meetingDurationError" class="hidden text-red-500 text-sm mt-1"></div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="maxDaysInAdvance" class="block text-sm font-medium text-gray-700">Maximum Days in Advance</label>
+                        <input type="number" name="maxDaysInAdvance" id="maxDaysInAdvance" required min="1" max="365"
+                               class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        <div id="maxDaysInAdvanceError" class="hidden text-red-500 text-sm mt-1"></div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="maxUses" class="block text-sm font-medium text-gray-700">Maximum Uses (optional)</label>
+                        <input type="number" name="maxUses" id="maxUses" min="1"
+                               class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        <div id="maxUsesError" class="hidden text-red-500 text-sm mt-1"></div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="expirationDate" class="block text-sm font-medium text-gray-700">Expiration Date (optional)</label>
+                        <input type="date" name="expirationDate" id="expirationDate"
+                               class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        <div id="expirationDateError" class="hidden text-red-500 text-sm mt-1"></div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700">Custom Questions</label>
+                        <div id="customQuestions" class="mt-2 space-y-4">
+                            <!-- Questions will be added here -->
+                        </div>
+                        <button type="button" onclick="addCustomQuestion()" 
+                                class="mt-2 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Add Question
+                        </button>
+                    </div>
+                    <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                        <button type="submit" id="submitLinkButton"
+                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm">
+                            <span id="submitLinkButtonText">Create</span>
+                            <svg id="submitLinkButtonSpinner" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
+                        <button type="button" onclick="hideCreateLinkModal()" 
+                                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    let isSubmitting = false;
+
+    function showCreateWindowModal() {
+        document.getElementById('createWindowModal').classList.remove('hidden');
+        // Reset form
+        document.getElementById('createWindowForm').reset();
+        document.getElementById('timeSlots').innerHTML = '';
+        document.getElementById('windowNameError').classList.add('hidden');
+        document.getElementById('timeSlotsError').classList.add('hidden');
+    }
+
+    function hideCreateWindowModal() {
+        document.getElementById('createWindowModal').classList.add('hidden');
+    }
+
+    function showCreateLinkModal() {
+        document.getElementById('createLinkModal').classList.remove('hidden');
+        // Reset form
+        document.getElementById('createLinkForm').reset();
+        document.getElementById('customQuestions').innerHTML = '';
+        // Reset all error messages
+        document.querySelectorAll('[id$="Error"]').forEach(el => el.classList.add('hidden'));
+    }
+
+    function hideCreateLinkModal() {
+        document.getElementById('createLinkModal').classList.add('hidden');
+    }
+
+    function addTimeSlot() {
+        const timeSlots = document.getElementById('timeSlots');
+        const slotDiv = document.createElement('div');
+        slotDiv.className = 'mt-4 grid grid-cols-3 gap-4';
+        slotDiv.innerHTML = `
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Weekday</label>
+                <select name="weekday" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <option value="">Select day</option>
+                    <option value="0">Sunday</option>
+                    <option value="1">Monday</option>
+                    <option value="2">Tuesday</option>
+                    <option value="3">Wednesday</option>
+                    <option value="4">Thursday</option>
+                    <option value="5">Friday</option>
+                    <option value="6">Saturday</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Start Hour</label>
+                <input type="number" name="startHour" required min="0" max="23" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">End Hour</label>
+                <input type="number" name="endHour" required min="0" max="23" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+            </div>
+        `;
+        timeSlots.appendChild(slotDiv);
+    }
+
+    function addCustomQuestion() {
+        const questions = document.getElementById('customQuestions');
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'mt-4';
+        questionDiv.innerHTML = `
+            <div class="flex items-center">
+                <input type="text" name="question" placeholder="Question" required
+                       class="flex-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                <div class="ml-4 flex items-center">
+                    <input type="checkbox" name="required" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                    <label class="ml-2 block text-sm text-gray-900">Required</label>
+                </div>
+                <button type="button" onclick="this.parentElement.parentElement.remove()" 
+                        class="ml-4 text-red-600 hover:text-red-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+        questions.appendChild(questionDiv);
+    }
+
+    // Form submissions
+    document.getElementById('createWindowForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (isSubmitting) return;
+
+        const submitButton = document.getElementById('submitWindowButton');
+        const submitButtonText = document.getElementById('submitWindowButtonText');
+        const submitButtonSpinner = document.getElementById('submitWindowButtonSpinner');
+        const windowNameError = document.getElementById('windowNameError');
+        const timeSlotsError = document.getElementById('timeSlotsError');
+
+        // Reset errors
+        windowNameError.classList.add('hidden');
+        timeSlotsError.classList.add('hidden');
+
+        // Validate form
+        const formData = new FormData(e.target);
+        const name = formData.get('name');
+        const slotElements = document.querySelectorAll('[name="weekday"]');
+
+        if (!name.trim()) {
+            windowNameError.textContent = 'Window name is required';
+            windowNameError.classList.remove('hidden');
+            return;
+        }
+
+        if (slotElements.length === 0) {
+            timeSlotsError.textContent = 'At least one time slot is required';
+            timeSlotsError.classList.remove('hidden');
+            return;
+        }
+
+        const timeSlots = [];
+        let hasError = false;
+
+        // Collect and validate time slots
+        slotElements.forEach((_, index) => {
+            const weekday = parseInt(formData.getAll('weekday')[index]);
+            const startHour = parseInt(formData.getAll('startHour')[index]);
+            const endHour = parseInt(formData.getAll('endHour')[index]);
+
+            if (isNaN(weekday) || isNaN(startHour) || isNaN(endHour)) {
+                timeSlotsError.textContent = 'All time slot fields are required';
+                timeSlotsError.classList.remove('hidden');
+                hasError = true;
+                return;
+            }
+
+            if (startHour >= endHour) {
+                timeSlotsError.textContent = 'End hour must be greater than start hour';
+                timeSlotsError.classList.remove('hidden');
+                hasError = true;
+                return;
+            }
+
+            timeSlots.push({ weekday, startHour, endHour });
+        });
+
+        if (hasError) return;
+
+        // Submit form
+        isSubmitting = true;
+        submitButton.classList.add('opacity-75', 'cursor-not-allowed');
+        submitButtonText.textContent = 'Creating...';
+        submitButtonSpinner.classList.remove('hidden');
+
+        try {
+            const response = await fetch('/scheduling/windows', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name,
+                    timeSlots
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to create scheduling window');
+            }
+
+            window.location.reload();
+        } catch (error) {
+            console.error('Error creating window:', error);
+            timeSlotsError.textContent = error.message || 'Failed to create scheduling window. Please try again.';
+            timeSlotsError.classList.remove('hidden');
+        } finally {
+            isSubmitting = false;
+            submitButton.classList.remove('opacity-75', 'cursor-not-allowed');
+            submitButtonText.textContent = 'Create';
+            submitButtonSpinner.classList.add('hidden');
+        }
+    });
+
+    document.getElementById('createLinkForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (isSubmitting) return;
+
+        const submitButton = document.getElementById('submitLinkButton');
+        const submitButtonText = document.getElementById('submitLinkButtonText');
+        const submitButtonSpinner = document.getElementById('submitLinkButtonSpinner');
+
+        // Reset all error messages
+        document.querySelectorAll('[id$="Error"]').forEach(el => el.classList.add('hidden'));
+
+        // Validate form
+        const formData = new FormData(e.target);
+        const name = formData.get('name');
+        const schedulingWindow = formData.get('schedulingWindow');
+        const meetingDuration = parseInt(formData.get('meetingDuration'));
+        const maxDaysInAdvance = parseInt(formData.get('maxDaysInAdvance'));
+        const maxUses = formData.get('maxUses') ? parseInt(formData.get('maxUses')) : null;
+        const expirationDate = formData.get('expirationDate') || null;
+
+        let hasError = false;
+
+        // Validate required fields
+        if (!name.trim()) {
+            document.getElementById('linkNameError').textContent = 'Link name is required';
+            document.getElementById('linkNameError').classList.remove('hidden');
+            hasError = true;
+        }
+
+        if (!schedulingWindow) {
+            document.getElementById('schedulingWindowError').textContent = 'Please select a scheduling window';
+            document.getElementById('schedulingWindowError').classList.remove('hidden');
+            hasError = true;
+        }
+
+        if (!meetingDuration || meetingDuration < 15 || meetingDuration % 15 !== 0) {
+            document.getElementById('meetingDurationError').textContent = 'Meeting duration must be at least 15 minutes and in 15-minute increments';
+            document.getElementById('meetingDurationError').classList.remove('hidden');
+            hasError = true;
+        }
+
+        if (!maxDaysInAdvance || maxDaysInAdvance < 1 || maxDaysInAdvance > 365) {
+            document.getElementById('maxDaysInAdvanceError').textContent = 'Maximum days in advance must be between 1 and 365';
+            document.getElementById('maxDaysInAdvanceError').classList.remove('hidden');
+            hasError = true;
+        }
+
+        if (maxUses && maxUses < 1) {
+            document.getElementById('maxUsesError').textContent = 'Maximum uses must be at least 1';
+            document.getElementById('maxUsesError').classList.remove('hidden');
+            hasError = true;
+        }
+
+        if (expirationDate && new Date(expirationDate) < new Date()) {
+            document.getElementById('expirationDateError').textContent = 'Expiration date must be in the future';
+            document.getElementById('expirationDateError').classList.remove('hidden');
+            hasError = true;
+        }
+
+        if (hasError) return;
+
+        // Collect custom questions
+        const customQuestions = [];
+        const questionElements = document.querySelectorAll('[name="question"]');
+        questionElements.forEach((_, index) => {
+            const question = formData.getAll('question')[index];
+            if (question.trim()) {
+                customQuestions.push({
+                    question: question.trim(),
+                    required: formData.getAll('required')[index] === 'on'
+                });
+            }
+        });
+
+        // Submit form
+        isSubmitting = true;
+        submitButton.classList.add('opacity-75', 'cursor-not-allowed');
+        submitButtonText.textContent = 'Creating...';
+        submitButtonSpinner.classList.remove('hidden');
+
+        try {
+            const response = await fetch('/scheduling/links', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name,
+                    schedulingWindow,
+                    meetingDuration,
+                    maxDaysInAdvance,
+                    maxUses,
+                    expirationDate,
+                    customQuestions
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to create scheduling link');
+            }
+
+            window.location.reload();
+        } catch (error) {
+            console.error('Error creating link:', error);
+            document.getElementById('linkNameError').textContent = error.message || 'Failed to create scheduling link. Please try again.';
+            document.getElementById('linkNameError').classList.remove('hidden');
+        } finally {
+            isSubmitting = false;
+            submitButton.classList.remove('opacity-75', 'cursor-not-allowed');
+            submitButtonText.textContent = 'Create';
+            submitButtonSpinner.classList.add('hidden');
+        }
+    });
+    </script>
+</body>
+</html> 

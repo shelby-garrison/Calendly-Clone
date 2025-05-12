@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendly Clone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="/" class="text-2xl font-bold text-indigo-600">Calendly Clone</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <div class="ml-3 relative">
+                            <div class="flex items-center space-x-4">
+                                <a href="/dashboard" class="text-gray-700 hover:text-gray-900">Dashboard</a>
+                                <a href="/auth/logout" class="text-gray-700 hover:text-gray-900">Logout</a>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <a href="/auth/login" class="text-gray-700 hover:text-gray-900">Login</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <%- body %>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 mt-8">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-gray-500 text-sm">
+                &copy; <%= new Date().getFullYear() %> Calendly Clone. All rights reserved.
+            </p>
+        </div>
+    </footer>
+</body>
+</html> 
